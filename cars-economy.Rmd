@@ -1,0 +1,144 @@
+---
+title: "car-economy"
+author: "Raniere Ramos"
+date: "09/04/2020"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r Pacotes necessários}
+install.packages("rmarkdown")
+install.packages("ggplot2")
+library(ggplot2)
+library(rmarkdown)
+```
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+theme_set(theme_light())
+```
+
+```{r Carregando o dataset}
+big_epa_cars <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-10-15/big_epa_cars.csv") %>%
+  mutate(uses_electricity = ifelse(highwayE > 0, "Uses Electricity", "Doesn't use electricity"))
+```
+```{r View dataset}
+big_epa_cars %>%
+  view()
+```
+
+```{r}
+# creating an object to alphabetize the variables
+big_epa_cars_alphabetical <- big_epa_cars %>%
+  select(sort(colnames(big_epa_cars)))
+```
+
+```{r}
+big_epa_cars_alphabetical %>% view()
+```
+
+```{r}
+y <- big_epa_cars_alphabetical %>%
+  count(atvType, sort = TRUE)
+y
+```
+
+```{r}
+x <- big_epa_cars %>%
+  count(cityA08 > 0)
+x
+```
+
+```{r}
+dt <- big_epa_cars %>%
+  select(city08, highway08, make, model, cylinders, displ, drive, engId, eng_dscr)
+
+```
+
+```{r}
+eng <- big_epa_cars %>%
+  count(eng_dscr, sort = TRUE)
+```
+
+```{r}
+drive <- big_epa_cars %>%
+  count(drive, sort = TRUE)
+drive
+```
+
+```{r}
+city_corr <- big_epa_cars %>%
+  ggplot(aes(highway08, city08, color = uses_electricity)) +
+  geom_point() +
+  geom_abline(color = "red") +
+  facet_wrap(~ uses_electricity, scales = "free") +
+  expand_limits(x = 0, y = 0) +
+  labs(x = "Highway MPG", y = "City MPG",
+       title = "How does fuel efficiency differ between city and highway?")
+city_corr
+```
+
+```{r}
+V <- big_epa_cars %>%
+  count(VClass, sort = TRUE)
+V
+```
+
+```{r}
+class <- big_epa_cars %>%
+  filter(cityE == 0) %>%
+  mutate(VClass = fct_reorder(VClass, city08)) %>%
+  ggplot(aes(VClass, city08)) +
+  geom_boxplot() +
+  coord_flip()
+class
+```
+
+```{r}
+class_W <- big_epa_cars %>%
+  filter(cityE == 0) %>%
+  mutate(VClass = fct_lump(VClass, 8),
+         VClass = fct_reorder(VClass, city08)) %>%
+  ggplot(aes(VClass, city08)) +
+  geom_boxplot() +
+  coord_flip()
+class_W
+```
+
+```{r}
+class_drive <- big_epa_cars %>%
+  filter(cityE == 0) %>%
+  mutate(drive = fct_reorder(drive, city08)) %>%
+  ggplot(aes(drive, city08)) +
+  geom_boxplot() +
+  coord_flip()
+class_drive
+```
+
+```{r}
+cilindros <- big_epa_cars %>%
+  filter(cityE == 0) %>%
+  ggplot(aes(cylinders, city08, group = cylinders)) +
+  geom_boxplot()
+cilindros
+```
+
+```{r}
+displ_cil <- big_epa_cars %>%
+  filter(cityE == 0) %>%
+  ggplot(aes(displ, city08)) +
+  geom_point()
+displ_cil
+```
+
+
+
+
+
+
+
